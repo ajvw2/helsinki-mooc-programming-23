@@ -7,6 +7,7 @@ import pygame
 from random import randint
 import numpy as np
 
+
 class Robot:
     def __init__(self, window: pygame.surface.Surface):
         # Different images of the robot for jumping animations
@@ -37,14 +38,26 @@ class Robot:
         # Main function of the robot. Calls on the move() function which calculates
         # new coordinates and changes input values when necessary
         self.__move(inputs)
-        # Plot the image on the screen 
-        self.__window.blit(self.__jump_image(inputs["to_left"], inputs["to_right"], inputs["is_jumping"]), (self.__x, self.__y))
-    
+        # Plot the image on the screen
+        self.__window.blit(
+            self.__jump_image(
+                inputs["to_left"], inputs["to_right"], inputs["is_jumping"]
+            ),
+            (self.__x, self.__y),
+        )
+
     def __move(self, inputs: dict):
         # Input is a dict containing 5 boolean values: to_left, to_right, is_running, is_jumping, is_double_jumping
         x_velocity = self.__base_movement_speed(inputs["to_left"], inputs["to_right"])
-        x_velocity += self.__running_speed(inputs["to_left"], inputs["to_right"], inputs["is_running"])
-        x_velocity += self.__jump_x_velocity(inputs["to_left"], inputs["to_right"], inputs["is_jumping"], inputs["is_double_jumping"])
+        x_velocity += self.__running_speed(
+            inputs["to_left"], inputs["to_right"], inputs["is_running"]
+        )
+        x_velocity += self.__jump_x_velocity(
+            inputs["to_left"],
+            inputs["to_right"],
+            inputs["is_jumping"],
+            inputs["is_double_jumping"],
+        )
         x_velocity += self.__deceleration(inputs["to_left"], inputs["to_right"])
         # Don't move beyond the horizontal borders of the window
         self.__x += x_velocity
@@ -57,7 +70,9 @@ class Robot:
 
         # This function changes the y variable and returns jump boolean values (changed or not,
         # dependent on what happens inside jump())
-        jump_boolean_values = self.__jump(inputs["is_jumping"], inputs["is_double_jumping"])
+        jump_boolean_values = self.__jump(
+            inputs["is_jumping"], inputs["is_double_jumping"]
+        )
         # The jump variables are changed in the dictionary thats input
         inputs["is_jumping"] = jump_boolean_values[0]
         inputs["is_double_jumping"] = jump_boolean_values[1]
@@ -74,7 +89,7 @@ class Robot:
             speed_r = 2.0
         # Return the 'vector' of both speeds. If both keys are being pressed, they will cancel each other out
         return speed_l + speed_r
-    
+
     def __running_speed(self, to_left: bool, to_right: bool, is_running: bool):
         # This function determines the contribution of running to the total movement speed in the horizontal plane
         speed_l = 0.0
@@ -85,8 +100,10 @@ class Robot:
         if to_right and is_running:
             speed_r = 1.0
         return speed_l + speed_r
-    
-    def __jump_x_velocity(self, to_left: bool, to_right:bool, is_jumping: bool, is_double_jumping: bool):
+
+    def __jump_x_velocity(
+        self, to_left: bool, to_right: bool, is_jumping: bool, is_double_jumping: bool
+    ):
         # This function determines the contribution of jumping to the total movement speed in the horizontal plane
         speed_l = 0.0
         speed_r = 0.0
@@ -101,8 +118,8 @@ class Robot:
         elif to_right and is_double_jumping:
             speed_r = 1.0
         return speed_l + speed_r
-    
-    def __deceleration(self, to_left: bool, to_right:bool):
+
+    def __deceleration(self, to_left: bool, to_right: bool):
         # After releasing the left and right movement keys, the robot doesn't abruptly stop, but decelerates to a halt.
         # This function determines the speed while decelerating (i.e. when neither left nor right is pressed), based on
         # the previous velocity in the horizontal plane.
@@ -116,7 +133,7 @@ class Robot:
         elif self.__previous_x_velocity > 0 and not to_left and not to_right:
             speed_r = self.__previous_x_velocity - decel_amount
         return speed_l + speed_r
-            
+
     def __jump(self, is_jumping: bool, is_double_jumping: bool):
         # Setting the gravity value
         gravity = 1
@@ -157,21 +174,22 @@ class Robot:
         else:
             # If jumping without a direction, use the jump left image
             return self.__robot_jumping_left
-    
+
     def get_hitbox(self):
         # Create a hitbox (rectangle object) on the position. Although it uses the
         # robot.png image, this will still work with the jumping images, since
         # they are the same size.
-        robot_hitbox = self.__robot.get_rect(topleft = (self.__x, self.__y))
+        robot_hitbox = self.__robot.get_rect(topleft=(self.__x, self.__y))
         # Decrease hitbox size by 5% (this simply 'felt' better in game because
         # the robot image has some empty pixels)
         robot_hitbox = robot_hitbox.scale_by(0.95)
         return robot_hitbox
-    
+
     def reset(self):
         # Reset robot to starting position after game over
         self.__x = self.__window_w / 2
         self.__y = self.__y_initial
+
 
 class Asteroid:
     speed = 1
@@ -192,14 +210,14 @@ class Asteroid:
         # Spawns above the upper screen border and on a random horizontal coordinate
         self._x = randint(0, self._window_w - self._object.get_width())
         self._y = -self._object.get_height()
-        # Speed in the vertical direction is class speed + random number ranging from 
+        # Speed in the vertical direction is class speed + random number ranging from
         # -0,5 (50% speed) to 1,0 (200% speed)
         self._y_speed = Asteroid.speed + (randint(-5, 10) / 10)
         # Speed in the horizontal direction with normal distribution with mean 0
         self._x_speed = np.random.normal(0, self._y_speed * 0.08, 1)[0]
         # Rotation angle
         self._rotation_angle = randint(0, 90) / 1000
-        
+
     @property
     def points(self):
         return self._points
@@ -234,15 +252,19 @@ class Asteroid:
             self._points = 3
         else:
             multiplier = 1
-        asteroid = pygame.transform.scale(asteroid, (w*scale*multiplier, h*scale*multiplier))
+        asteroid = pygame.transform.scale(
+            asteroid, (w * scale * multiplier, h * scale * multiplier)
+        )
         # Random horizontal/vertical flips
-        asteroid = pygame.transform.flip(asteroid, bool(randint(0, 1)), bool(randint(0, 1)))
+        asteroid = pygame.transform.flip(
+            asteroid, bool(randint(0, 1)), bool(randint(0, 1))
+        )
         # Return the randomized image
         return asteroid
-        
+
     def _get_hitbox(self):
         # Create the hitbox of the asteroid
-        object_hitbox = self._object.get_rect(topleft = (self._x, self._y))
+        object_hitbox = self._object.get_rect(topleft=(self._x, self._y))
         # Decrease the scale of the hitbox by 10% (collision corresponds
         # better to the actual image displayed this way)
         object_hitbox = object_hitbox.scale_by(0.90)
@@ -273,6 +295,7 @@ class Asteroid:
     def fall(self):
         self._window.blit(self._object, self._next_coordinates())
 
+
 class Heart(Asteroid):
     # This class can create Heart objects, which are hearts falling from the sky that
     # will increase the player's number of lives. It behaves like the asteroid class,
@@ -287,20 +310,22 @@ class Heart(Asteroid):
         self._x_speed = 0
         self._rotation_angle = 0
 
+
 class FileHandler:
     def __init__(self, file_name):
         self.__file_name = file_name
-    
+
     def load_file(self):
         high_score = []
         with open(self.__file_name) as f:
             for line in f:
                 high_score.append(int(line.strip()))
         return high_score[0]
-    
+
     def save_file(self, high_score: int):
         with open(self.__file_name, "w") as f:
             f.write(f"{high_score}")
+
 
 class AsteroidGame:
     def __init__(self):
@@ -314,17 +339,19 @@ class AsteroidGame:
         self.__bg_color = (0, 0, 0)
         # Settin up the playable robot
         self.__robot = Robot(self.__window)
-        # Default controls 
-        self.__controls = {"move_left"          :       pygame.K_a,
-                            "move_right"        :       pygame.K_d,
-                            "run"               :       pygame.K_w,
-                            "jump"              :       pygame.K_SPACE,
-                            "pause"             :       pygame.K_ESCAPE}
+        # Default controls
+        self.__controls = {
+            "move_left": pygame.K_a,
+            "move_right": pygame.K_d,
+            "run": pygame.K_w,
+            "jump": pygame.K_SPACE,
+            "pause": pygame.K_ESCAPE,
+        }
         # Setting up the game clock and fps
         self.__clock = pygame.time.Clock()
         self.__fps = 60
-        
-        self.__filehandler = FileHandler("highscore.txt")    
+
+        self.__filehandler = FileHandler("highscore.txt")
 
     def __register_inputs(self, inputs: dict):
         # This method changes values in the 'inputs' dictionary based on
@@ -345,7 +372,7 @@ class AsteroidGame:
                         inputs["is_double_jumping"] = True
                 if event.key == self.__controls["pause"]:
                     inputs["pause_status_change"] = True
- 
+
             if event.type == pygame.KEYUP:
                 if event.key == self.__controls["move_left"]:
                     inputs["to_left"] = False
@@ -357,13 +384,22 @@ class AsteroidGame:
             if event.type == pygame.QUIT:
                 exit()
 
-    def __ingame_text(self, score: int, high_score: int, lives: int, text_font1: pygame.font.Font, text_font2: pygame.font.Font):
+    def __ingame_text(
+        self,
+        score: int,
+        high_score: int,
+        lives: int,
+        text_font1: pygame.font.Font,
+        text_font2: pygame.font.Font,
+    ):
         # Colors (red and green)
         score_color = (255, 0, 0)
         lives_color = (50, 205, 50)
         # Text objects for score and lives
         score_text = text_font1.render(f"Score: {score}", True, score_color)
-        high_score_text = text_font2.render(f"(High score: {high_score})", True, score_color)
+        high_score_text = text_font2.render(
+            f"(High score: {high_score})", True, score_color
+        )
         lives_text = text_font1.render(f"+", True, score_color)
         # Blit
         self.__window.blit(score_text, (500, 20))
@@ -372,9 +408,13 @@ class AsteroidGame:
         heart_object = pygame.image.load("heart.png")
         for i in range(lives):
             if i > 10:
-                self.__window.blit(lives_text, (30 + heart_object.get_width()*11 + 3, 14))
+                self.__window.blit(
+                    lives_text, (30 + heart_object.get_width() * 11 + 3, 14)
+                )
             else:
-                self.__window.blit(heart_object, (30 + heart_object.get_width()*i, 20))
+                self.__window.blit(
+                    heart_object, (30 + heart_object.get_width() * i, 20)
+                )
 
         # self.__window.blit(lives_text, (500, 70))
 
@@ -384,26 +424,30 @@ class AsteroidGame:
         if state == -1:
             return state
         # Return the input game state if pause key hasn't been pressed.
-        # If the pause key is pressed in the previous frame, change it 
+        # If the pause key is pressed in the previous frame, change it
         # to 'unpressed' in this frame and change the game state accordingly
         # (i.e. if game is paused, unpause, and vice versa).
-        if not inputs ["pause_status_change"]:
+        if not inputs["pause_status_change"]:
             return state
         else:
-            inputs ["pause_status_change"] = False
+            inputs["pause_status_change"] = False
             return 1 if state == 0 else 0
-        
+
     def __pause_menu(self, text_font: pygame.font.Font):
         # Set text color
         text_color = (255, 255, 255)
         # Create text object
-        text = text_font.render("Game paused. Press 'Esc' to continue...", True, text_color)
+        text = text_font.render(
+            "Game paused. Press 'Esc' to continue...", True, text_color
+        )
         # Create rectangle for text object so it can be centered easily
-        text_rect = text.get_rect(center = (self.__window_w / 2, self.__window_h / 2))
+        text_rect = text.get_rect(center=(self.__window_w / 2, self.__window_h / 2))
         # Create on display
         self.__window.blit(text, text_rect)
 
-    def __game_over_handler(self, lives: int, score: int, high_score: int, state: int, inputs: dict):
+    def __game_over_handler(
+        self, lives: int, score: int, high_score: int, state: int, inputs: dict
+    ):
         # Return value is the new game state.
         if lives <= 0:
             # If the player has 0 lives and the game isn't in game-over state,
@@ -416,19 +460,21 @@ class AsteroidGame:
                 if inputs["pause_status_change"]:
                     if score > high_score:
                         self.__filehandler.save_file(score)
-                    inputs["pause_status_change"] = False # TODO might not be necessary
+                    inputs["pause_status_change"] = False  # TODO might not be necessary
                     self.execute()
         return state
 
-    def __game_over_menu(self, text_font: pygame.font.Font, header_font: pygame.font.Font):
+    def __game_over_menu(
+        self, text_font: pygame.font.Font, header_font: pygame.font.Font
+    ):
         # Set text color
         text_color = (255, 255, 255)
         # Create header and text object
         header = header_font.render("GAME OVER", True, text_color)
         text = text_font.render("Press 'Esc' to restart", True, text_color)
         # Create rectangles for easy centering
-        header_rect = header.get_rect(center = (self.__window_w / 2, 220))
-        text_rect = text.get_rect(center = (self.__window_w / 2, 270))
+        header_rect = header.get_rect(center=(self.__window_w / 2, 220))
+        text_rect = text.get_rect(center=(self.__window_w / 2, 270))
         # Create on display
         self.__window.blit(header, header_rect)
         self.__window.blit(text, text_rect)
@@ -440,7 +486,7 @@ class AsteroidGame:
         spawn_chance = base_spawn_chance + (score / 5)
         if randint(0, 1000) < spawn_chance:
             asteroids.append([Asteroid(self.__window), False])
-        
+
         # HEARTS
         # Spawn every 10 points scored + variable factor dependent on score
         # The higher the score, the less hearts spawn. At 1000 score, no more
@@ -468,9 +514,9 @@ class AsteroidGame:
         # border of the screen (loss of a life)
         for asteroid in asteroids:
             if not asteroid[0].on_screen() and not asteroid[1]:
-                lives-= 1
+                lives -= 1
         # When hearts collide with the robot, the number of lives increases by 1.
-        # Values in the hearts dict have the followin structure: 
+        # Values in the hearts dict have the followin structure:
         # hearts[spawn_time] = [Heart(), bool(collision with player in previous frame?)]
         for heart in hearts.values():
             if heart[1]:
@@ -495,7 +541,7 @@ class AsteroidGame:
             # (default [1] = False, after collision [1] = True)
             if asteroid[0].collision(self.__robot):
                 asteroid[1] = True
-        
+
         # HEART COLLISION CHECK
         for heart in hearts.values():
             # Let heart fall
@@ -515,12 +561,14 @@ class AsteroidGame:
         game_font2 = pygame.font.SysFont("Arial", 40)
         game_font3 = pygame.font.SysFont("Arial", 15)
         # Game inputs. Set to false at the start of every game.
-        game_inputs = {"to_left"                :       False,
-                        "to_right"              :       False,
-                        "is_running"            :       False,
-                        "is_jumping"            :       False,
-                        "is_double_jumping"     :       False,
-                        "pause_status_change"   :       False}
+        game_inputs = {
+            "to_left": False,
+            "to_right": False,
+            "is_running": False,
+            "is_jumping": False,
+            "is_double_jumping": False,
+            "pause_status_change": False,
+        }
         # Initial score and lives of the player.
         player_score = 0
         player_lives = 3
@@ -539,16 +587,18 @@ class AsteroidGame:
             high_score = self.__filehandler.load_file()
         except FileNotFoundError:
             high_score = 0
-                
+
         while True:
             # Register the inputs
             self.__register_inputs(game_inputs)
             # Check pause and game-over state conditions, and change game state accordingly
             game_state = self.__pause_handler(game_state, game_inputs)
-            game_state = self.__game_over_handler(player_lives, player_score, high_score, game_state, game_inputs)
+            game_state = self.__game_over_handler(
+                player_lives, player_score, high_score, game_state, game_inputs
+            )
             # Fill the window with the set background color
             self.__window.fill(self.__bg_color)
-            
+
             # PLAYING / PAUSED / GAME OVER GAME STATES
             if game_state == playing:
                 # Robot registers controls
@@ -557,13 +607,19 @@ class AsteroidGame:
                 self.__spawner(player_score, spawned_asteroids, spawned_hearts)
                 # New value for score and lives is calculated
                 player_score = self.__updated_score(player_score, spawned_asteroids)
-                player_lives = self.__updated_lives(player_lives, spawned_asteroids, spawned_hearts)
+                player_lives = self.__updated_lives(
+                    player_lives, spawned_asteroids, spawned_hearts
+                )
                 # Delete spawned after score/lives update
-                spawned_asteroids, spawned_hearts = self.__delete_offscreen_objects(spawned_asteroids, spawned_hearts)
+                spawned_asteroids, spawned_hearts = self.__delete_offscreen_objects(
+                    spawned_asteroids, spawned_hearts
+                )
                 # Collision checker
                 self.__collision_check(spawned_asteroids, spawned_hearts)
                 # Create game text
-                self.__ingame_text(player_score, high_score, player_lives, game_font1, game_font3)
+                self.__ingame_text(
+                    player_score, high_score, player_lives, game_font1, game_font3
+                )
             elif game_state == paused:
                 self.__pause_menu(game_font1)
             elif game_state == game_over:
@@ -572,11 +628,11 @@ class AsteroidGame:
             # Frame generation
             pygame.display.flip()
             self.__clock.tick(self.__fps)
-            
+
+
 def main():
     AsteroidGame().execute()
 
+
 if __name__ == "__main__":
     main()
-        
-        
